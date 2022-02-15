@@ -17,6 +17,8 @@ contract Lotto is Pausable, AccessControl{
     address public winner;
     address[] public Players;
 
+    
+
     // uint internal _FEE = 0.0001 * 1e18;
     uint public winningNumber;
     uint Ticket;
@@ -44,13 +46,16 @@ contract Lotto is Pausable, AccessControl{
     }
 
     constructor(address _L){
-        priceFeed = AggregatorV3Interface(0xAB594600376Ec9fD91F8e885dADF0CE036862dE0);
+        priceFeed = AggregatorV3Interface(0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada);
         LottoTickets = IERC721(_L);
         startDay = 1642420800;
         lotteryPeriod = startDay + 5 days;
         claimperiod = lotteryPeriod + 2 days;
         _win = false;
+         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(CEO, msg.sender);
     }
+
 
     // function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
     //     winningNumber = randomness;
@@ -69,18 +74,18 @@ contract Lotto is Pausable, AccessControl{
 
     function getDollar() public view returns(uint256){
         uint price = getPrice();
-        return (uint(1e14) / price) * 1e12; // a dollar in matic
+        return ((uint(1e14) / price) * 1e12); // a dollar in matic
     }
 
-    function getFiveDollar() public view returns(uint256){
-        uint price = getPrice();
-        return ((uint(1e14) / price) * 1e12)*5; // Five dollar in matic
-    }
+    // function getFiveDollar() public view returns(uint256){
+    //     uint price = getPrice();
+    //     return (((uint(1e14) / price) * 1e12)*5); // Five dollar in matic
+    // }
 
-    function getTenDollar() public view returns(uint256){
-        uint price = getPrice();
-        return ((uint(1e14) / price) * 1e12)*10; // Ten dollar in matic
-    }
+    // function getTenDollar() public view returns(uint256){
+    //     uint price = getPrice();
+    //     return (((uint(1e14) / price) * 1e12)*10); // Ten dollar in matic
+    // }
 
     function getPot() public view returns(uint256){
         return address(this).balance;
@@ -109,53 +114,32 @@ contract Lotto is Pausable, AccessControl{
     }
 
     function BuyTicket() public payable{
-        if(msg.value == getDollar()){
-            require(msg.value >= getDollar(), "BTS: Price should be greater than a dollar");
         require(block.timestamp < lotteryPeriod, "Lottery Period Ended: No More buying allowed");
-        Players[++Ticket] = msg.sender;
-        LottoTickets.safeMint(msg.sender, Ticket);
-        }
-
-        else if(msg.value == getFiveDollar()){
-            require(msg.value >= getFiveDollar(), "BTS: Price should be greater than 5 dollar");
-        require(block.timestamp < lotteryPeriod, "Lottery Period Ended: No More buying allowed");
-        uint j=1;
-        for(j;j<=5;j+=1){
+        require(msg.value >= getDollar(), "BTS: Price should be greater than a dollar");
+        // uint extra = 0;
+        if(msg.value >= (getDollar())*10){
+            for(uint j = 1;j <= 10;j += 1){
+                Players[++Ticket] = msg.sender;
+                LottoTickets.safeMint(msg.sender, Ticket);
+            }
+            // extra = msg.value - getTenDollar() - gasleft();
+        }else if(msg.value >= (getDollar())*5){
+            for(uint j = 1;j <= 5;j += 1){
+                Players[++Ticket] = msg.sender;
+                LottoTickets.safeMint(msg.sender, Ticket);
+            }
+            // extra = msg.value - getFiveDollar() - gasleft();
+        }else{
             Players[++Ticket] = msg.sender;
-        LottoTickets.safeMint(msg.sender, Ticket);
+            LottoTickets.safeMint(msg.sender, Ticket);
+            // extra = msg.value - getDollar() - gasleft();
         }
-        }
-
-        else if(msg.value == getTenDollar()){
-            require(msg.value >= getTenDollar(), "BTS: Price should be greater than 10 dollar");
-        require(block.timestamp < lotteryPeriod, "Lottery Period Ended: No More buying allowed");
-        uint j=1;
-        for(j;j<=10;j+=1){
-            Players[++Ticket] = msg.sender;
-        LottoTickets.safeMint(msg.sender, Ticket);
-        }
-        }
+        
+        // Return if extra paid
+        // if(extra > 0){
+        //     payable(msg.sender).transfer(extra);
+        // }
     }
-
-    // function BuyFiveTicket() public payable{
-    //     require(msg.value >= getFiveDollar(), "BTS: Price should be greater than a dollar");
-    //     require(block.timestamp < lotteryPeriod, "Lottery Period Ended: No More buying allowed");
-    //     uint j=1;
-    //     for(j;j<=5;j+=1){
-    //         Players[++Ticket] = msg.sender;
-    //     LottoTickets.safeMint(msg.sender, Ticket);
-    //     }
-    // }
-
-    // function BuyTenTicket() public payable{
-    //     require(msg.value >= getTenDollar(), "BTS: Price should be greater than a dollar");
-    //     require(block.timestamp < lotteryPeriod, "Lottery Period Ended: No More buying allowed");
-    //     uint j=1;
-    //     for(j;j<=10;j+=1){
-    //         Players[++Ticket] = msg.sender;
-    //     LottoTickets.safeMint(msg.sender, Ticket);
-    //     }
-    // }
 
     function AnnounceLotteryWinner() public validate{
         require(block.timestamp > lotteryPeriod, "Lottery Period Not Ended: No winners yet");
