@@ -74,15 +74,15 @@ contract Lotto is Pausable, AccessControl{
         return (uint(1e14) / price) * 1e12; // a dollar in matic
     }
 
-    function getFiveDollar() public view returns(uint256){
-        uint price = getPrice();
-        return ((uint(1e14) / price) * 1e12)*5; // Five dollar in matic
-    }
+    // function getFiveDollar() public view returns(uint256){
+    //     uint price = getPrice();
+    //     return ((uint(1e14) / price) * 1e12)*5; // Five dollar in matic
+    // }
 
-    function getTenDollar() public view returns(uint256){
-        uint price = getPrice();
-        return ((uint(1e14) / price) * 1e12)*10; // Ten dollar in matic
-    }
+    // function getTenDollar() public view returns(uint256){
+    //     uint price = getPrice();
+    //     return ((uint(1e14) / price) * 1e12)*10; // Ten dollar in matic
+    // }
 
     function getPot() public view returns(uint256){
         return address(this).balance;
@@ -120,24 +120,24 @@ contract Lotto is Pausable, AccessControl{
 
         require(msg.value >= onedollar, "BTS: Price should be greater than a dollar");
 
-        if(msg.value >= (onedollar * 10)){
-            uint j=1;
-            while(j <= 10){
-                Players[++Ticket] = msg.sender;
-                LottoTickets.safeMint(msg.sender, Ticket);
-                j += 1;
-            }
-        }else if(msg.value >= (onedollar * 5)){
-            uint j=1;
-            while(j <= 10){
-                Players[++Ticket] = msg.sender;
-                LottoTickets.safeMint(msg.sender, Ticket);
-                j += 1;
-            }
-        }else{
-            Players[++Ticket] = msg.sender;
+        // if(msg.value >= (onedollar * 10)){
+        //     uint j=1;
+        //     while(j <= 10){
+        //         Players[++Ticket] = msg.sender;
+        //         LottoTickets.safeMint(msg.sender, Ticket);
+        //         j += 1;
+        //     }
+        // }else if(msg.value >= (onedollar * 5)){
+        //     uint j=1;
+        //     while(j <= 10){
+        //         Players[++Ticket] = msg.sender;
+        //         LottoTickets.safeMint(msg.sender, Ticket);
+        //         j += 1;
+        //     }
+        // }else{
+            //Players[++Ticket] = msg.sender;
             LottoTickets.safeMint(msg.sender, Ticket);
-        }
+        //}
     }
 
     function AnnounceLotteryWinner() public validate{
