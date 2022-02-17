@@ -15,6 +15,7 @@ contract Lotto is Pausable, AccessControl{
     // address internal _VRF = 0x3d2341ADb2D31f1c5530cDC622016af293177AE0;
     // address internal _LINK = 0xb0897686c545045aFc77CF20eC7A532E3120E0F1;
     address public winner;
+    mapping (address => uint) index;
     address[] public Players;
 
     // uint internal _FEE = 0.0001 * 1e18;
@@ -115,10 +116,10 @@ contract Lotto is Pausable, AccessControl{
     function BuyTicket() public payable{
         require(block.timestamp < lotteryPeriod, "Lottery Period Ended: No More buying allowed");
         //---------
-        uint price = getPrice();
-        uint onedollar = (uint(1e14) / price) * 1e12; // a dollar in matic
+        // uint price = getPrice();
+        // uint onedollar = (uint(1e14) / price) * 1e12; // a dollar in matic
 
-        require(msg.value >= onedollar, "BTS: Price should be greater than a dollar");
+        require(msg.value >= getDollar(), "BTS: Price should be greater than a dollar");
 
         // if(msg.value >= (onedollar * 10)){
         //     uint j=1;
@@ -135,10 +136,14 @@ contract Lotto is Pausable, AccessControl{
         //         j += 1;
         //     }
         // }else{
-            //Players[++Ticket] = msg.sender;
+            index[msg.sender] = Players.length;
+            Players.push(msg.sender);
             LottoTickets.safeMint(msg.sender, Ticket);
+            
         //}
     }
+
+    //function () external payable {}
 
     function AnnounceLotteryWinner() public validate{
         require(block.timestamp > lotteryPeriod, "Lottery Period Not Ended: No winners yet");
